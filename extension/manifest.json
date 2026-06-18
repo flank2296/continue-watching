@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Continue Watching (cineby + rivestream)",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Adds a Continue Watching list and resume-from-last-position to cineby & rivestream. Per-device, no account, no backend.",
   "permissions": ["storage", "alarms"],
   "optional_host_permissions": ["https://*/*"],
