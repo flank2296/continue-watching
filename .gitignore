@@ -1,0 +1,5 @@
+.DS_Store
+node_modules/
+sync-worker/.wrangler/
+sync-worker/node_modules/
+*.log

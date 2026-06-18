@@ -1,0 +1,46 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  width: 360px;
+  max-height: 540px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #15171c;
+  color: #eee;
+  display: flex;
+  flex-direction: column;
+}
+header { padding: 14px 16px; border-bottom: 1px solid #2a2d35; display: flex; justify-content: space-between; align-items: center; }
+header h1 { font-size: 15px; font-weight: 600; }
+.gear { background: none; border: none; color: #9aa0aa; font-size: 16px; cursor: pointer; padding: 2px 4px; }
+.gear:hover { color: #fff; }
+
+.sync { padding: 12px 16px; border-bottom: 1px solid #2a2d35; background: #181b21; display: flex; flex-direction: column; gap: 10px; }
+.sync label { font-size: 11px; color: #9aa0aa; display: flex; flex-direction: column; gap: 4px; }
+.sync input { padding: 7px 8px; font-size: 12px; background: #0f1115; border: 1px solid #3a3d45; border-radius: 6px; color: #eee; }
+.sync-actions { display: flex; gap: 6px; }
+.sync-actions button { flex: 1; padding: 7px 4px; font-size: 11px; border: 1px solid #3a3d45; background: #20232b; color: #ddd; border-radius: 6px; cursor: pointer; }
+.sync-actions button:hover { background: #2a2d35; }
+.sync-status { font-size: 11px; color: #9aa0aa; min-height: 14px; }
+.sync-status.ok { color: #5ad17a; }
+.sync-status.err { color: #ff6b6b; }
+
+.list { overflow-y: auto; flex: 1; max-height: 420px; }
+.empty { padding: 28px 16px; color: #888; font-size: 13px; text-align: center; line-height: 1.5; }
+
+.row { display: flex; gap: 10px; padding: 10px 12px; cursor: pointer; align-items: center; position: relative; }
+.row:hover { background: #1e2129; }
+.row img { width: 46px; height: 68px; object-fit: cover; border-radius: 5px; background: #2a2d35; flex: none; }
+.row .info { flex: 1; min-width: 0; }
+.row .title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .sub { font-size: 11px; color: #9aa0aa; margin-top: 3px; }
+.bar { height: 4px; background: #34373f; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: #e50914; }
+.rm { position: absolute; top: 6px; right: 8px; color: #777; font-size: 14px; display: none; }
+.row:hover .rm { display: block; }
+.rm:hover { color: #fff; }
+
+footer { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid #2a2d35; }
+footer button {
+  flex: 1; padding: 8px 4px; font-size: 11px; border: 1px solid #3a3d45;
+  background: #20232b; color: #ddd; border-radius: 6px; cursor: pointer;
+}
+footer button:hover { background: #2a2d35; }

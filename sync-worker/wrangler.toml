@@ -1,0 +1,9 @@
+name = "cw-sync"
+main = "worker.js"
+compatibility_date = "2024-09-01"
+
+# KV namespace binding. Create it once, then paste the returned id below:
+#   npx wrangler kv namespace create CW_KV
+[[kv_namespaces]]
+binding = "CW_KV"
+id = "94d87bd096454f279f1f53aefa28f3e2"

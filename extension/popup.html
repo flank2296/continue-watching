@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Continue Watching</h1>
+      <button id="gear" class="gear" title="Sync settings">⚙</button>
+    </header>
+
+    <section id="sync" class="sync" hidden>
+      <label>Sync server URL
+        <input id="endpoint" type="url" placeholder="https://cw-sync.you.workers.dev" />
+      </label>
+      <label>Passphrase
+        <input id="passphrase" type="password" placeholder="same on every device" />
+      </label>
+      <div class="sync-actions">
+        <button id="saveSync">Save &amp; sync</button>
+        <button id="syncNow">Sync now</button>
+      </div>
+      <div id="syncStatus" class="sync-status"></div>
+    </section>
+
+    <div id="list" class="list"></div>
+    <footer>
+      <button id="export" title="Save your history to a file">Export</button>
+      <button id="import" title="Load history from a file">Import</button>
+      <button id="clear" title="Delete all history on this device">Clear all</button>
+      <input id="file" type="file" accept="application/json,.json" hidden />
+    </footer>
+    <script src="store.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Continue Watching (cineby + rivestream)",
+  "version": "0.2.0",
+  "description": "Adds a Continue Watching list and resume-from-last-position to cineby & rivestream. Per-device, no account, no backend.",
+  "permissions": ["storage", "alarms"],
+  "optional_host_permissions": ["https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Continue Watching",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.cineby.at/*",
+        "*://*.cineby.app/*",
+        "*://*.cineby.gd/*",
+        "*://*.rivestream.net/*",
+        "*://*.rivestream.live/*",
+        "*://*.rivestream.org/*"
+      ],
+      "js": ["store.js", "content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}
