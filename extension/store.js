@@ -78,5 +78,10 @@ const CWStore = {
   },
 };
 
-// expose for popup module scripts (content script shares the same isolated world)
-if (typeof window !== 'undefined') window.CWStore = CWStore;
+// Expose for the popup and the content script. Content-script files don't reliably
+// share top-level `const` bindings across files, so publish these on the global so
+// content.js can read CW_KEY (used by its storage-change refresh) and CWStore.
+if (typeof window !== 'undefined') {
+  window.CWStore = CWStore;
+  window.CW_KEY = CW_KEY;
+}

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Continue Watching (cineby + rivestream)
 // @namespace    video-ext.continue-watching
-// @version      0.2.0
+// @version      0.2.1
 // @description  Adds a "Continue Watching" list and resume-from-last-position to cineby & rivestream, with optional end-to-end-encrypted cross-device sync.
 // @author       you
 // @match        *://*.cineby.at/*
@@ -273,7 +273,7 @@
 
     function start() {
       if (enabled()) run('boot');
-      setInterval(() => { if (enabled()) run('interval'); }, 60000);
+      setInterval(() => { if (enabled()) run('interval'); }, 10000);
       window.addEventListener('focus', () => { if (enabled()) schedule('focus', 500); });
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && enabled()) schedule('visible', 500);
@@ -498,11 +498,22 @@
   }
 
   function seekTo(video, time) {
-    try {
-      video.currentTime = time;
-      const p = video.play();
-      if (p && p.catch) p.catch(() => {});
-    } catch (e) { log('seek failed', e); }
+    const apply = () => { try { video.currentTime = time; } catch (e) { log('seek failed', e); } };
+    apply();
+    // The player may not be seekable yet (metadata still loading) or may reset to 0
+    // right after we set it — retry until the position sticks (~10s max).
+    let tries = 0;
+    const tick = () => {
+      if (tries++ > 20) return;
+      if (Math.abs(video.currentTime - time) <= 2) return; // it stuck
+      apply();
+      setTimeout(tick, 500);
+    };
+    video.addEventListener('loadedmetadata', apply, { once: true });
+    video.addEventListener('canplay', apply, { once: true });
+    setTimeout(tick, 300);
+    const p = video.play();
+    if (p && p.catch) p.catch(() => {});
   }
 
   // Wait for a <video> to appear (React mounts it lazily), then attach.
@@ -723,7 +734,7 @@
         box.appendChild(l);
         return input;
       };
-      const endpoint = mkField('Sync server URL', 'url', cfg.endpoint, 'https://cw-sync.you.workers.dev');
+      const endpoint = mkField('Sync server URL', 'url', cfg.endpoint || 'https://cw-sync.ankushgochke.workers.dev', 'https://cw-sync.you.workers.dev');
       const passphrase = mkField('Passphrase', 'password', cfg.passphrase, 'same on every device');
 
       const row2 = document.createElement('div');

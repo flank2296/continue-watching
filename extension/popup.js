@@ -124,13 +124,13 @@ document.getElementById('gear').addEventListener('click', () => {
   syncSection.hidden = !syncSection.hidden;
 });
 
+const DEFAULT_ENDPOINT = 'https://cw-sync.ankushgochke.workers.dev';
+
 async function loadSyncUI() {
   const o = await chrome.storage.local.get([CFG_KEY, STATUS_KEY]);
-  const cfg = o[CFG_KEY];
-  if (cfg) {
-    endpointEl.value = cfg.endpoint || '';
-    passEl.value = cfg.passphrase || '';
-  }
+  const cfg = o[CFG_KEY] || {};
+  endpointEl.value = cfg.endpoint || DEFAULT_ENDPOINT; // prefill so you only type the passphrase
+  passEl.value = cfg.passphrase || '';
   renderStatus(o[STATUS_KEY]);
 }
 

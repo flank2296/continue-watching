@@ -209,11 +209,22 @@
   }
 
   function seekTo(video, time) {
-    try {
-      video.currentTime = time;
-      const p = video.play();
-      if (p && p.catch) p.catch(() => {});
-    } catch (e) { log('seek failed', e); }
+    const apply = () => { try { video.currentTime = time; } catch (e) { log('seek failed', e); } };
+    apply();
+    // The player may not be seekable yet (metadata still loading) or may reset to 0
+    // right after we set it — retry until the position sticks (~10s max).
+    let tries = 0;
+    const tick = () => {
+      if (tries++ > 20) return;
+      if (Math.abs(video.currentTime - time) <= 2) return; // it stuck
+      apply();
+      setTimeout(tick, 500);
+    };
+    video.addEventListener('loadedmetadata', apply, { once: true });
+    video.addEventListener('canplay', apply, { once: true });
+    setTimeout(tick, 300);
+    const p = video.play();
+    if (p && p.catch) p.catch(() => {});
   }
 
   function waitForVideoAndTrack(adapter) {
@@ -467,6 +478,9 @@
     UI.build();
     installRouter();
     requestSync();
+    // While a streaming tab is open, pull every 10s (and keep the service worker
+    // awake). chrome.alarms can't go below 1 min, so this drives the fast cadence.
+    setInterval(requestSync, 10000);
     onRouteChange();
 
     // Auto-show the panel when you land on the site (but not on a watch page,
