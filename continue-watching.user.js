@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Continue Watching (cineby + rivestream)
 // @namespace    video-ext.continue-watching
-// @version      0.2.1
+// @version      0.2.2
 // @description  Adds a "Continue Watching" list and resume-from-last-position to cineby & rivestream, with optional end-to-end-encrypted cross-device sync.
 // @author       you
 // @match        *://*.cineby.at/*
@@ -372,6 +372,11 @@
         if (og && !/seo\.png(\?|$)/i.test(og)) return og;
         return null;
       },
+      // Best-effort episode name for TV (cineby renders it client-side); selector is
+      // TODO-verified against a live episode page.
+      extractEpisodeTitle() {
+        return null;
+      },
       getVideo() {
         return document.querySelector('video');
       },
@@ -437,16 +442,29 @@
 
     const type = adapter.extractType();
     const url = location.href;
+    const [, , , season, episode] = contentId.split(':'); // site:type:id[:season:episode]
     // Title/poster may not be hydrated yet — re-read them on every save and keep the
     // best value we've seen, so the record upgrades from "Movie 758330" to the real
     // title/art once React fills them in.
     let bestTitle = adapter.extractTitle();
     let bestPoster = adapter.extractPoster();
+    let bestEpisode = adapter.extractEpisodeTitle ? adapter.extractEpisodeTitle() : null;
     const refreshMeta = () => {
       const t = adapter.extractTitle();
       if (t) bestTitle = t;
       const p = adapter.extractPoster();
       if (p) bestPoster = p;
+      const e = adapter.extractEpisodeTitle ? adapter.extractEpisodeTitle() : null;
+      if (e) bestEpisode = e;
+    };
+    // Movies show just their name; TV shows "Show — S1·E2 [· Episode name]".
+    const buildDisplayTitle = () => {
+      if (type === 'tv' && season) {
+        if (!bestTitle) return labelFromId(contentId);
+        const se = `S${season}·E${episode}`;
+        return bestEpisode ? `${bestTitle} — ${se} · ${bestEpisode}` : `${bestTitle} — ${se}`;
+      }
+      return bestTitle || labelFromId(contentId);
     };
     log('tracking', contentId);
 
@@ -476,7 +494,7 @@
       Store.save({
         contentId,
         type,
-        title: bestTitle || labelFromId(contentId),
+        title: buildDisplayTitle(),
         posterUrl: bestPoster || '',
         url,
         currentTime: cur,
