@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Continue Watching (cineby + rivestream)
 // @namespace    video-ext.continue-watching
-// @version      0.2.4
+// @version      0.2.5
 // @description  Adds a "Continue Watching" list and resume-from-last-position to cineby & rivestream, with optional end-to-end-encrypted cross-device sync.
 // @author       you
 // @match        *://*.cineby.at/*
@@ -814,7 +814,17 @@
     function renderRow(r) {
       const row = document.createElement('div');
       row.className = 'row';
-      row.addEventListener('click', () => { location.assign(r.url); });
+      row.addEventListener('click', () => {
+        const here = activeAdapter();
+        const sameContent = here && here.matches() && here.extractContentId() === r.contentId;
+        const v = document.querySelector('video');
+        if (sameContent && v) {
+          seekTo(v, r.currentTime); // already on this page — just jump, don't reload
+        } else {
+          location.assign(r.url); // different page — navigate; the resume toast seeks there
+        }
+        panelEl.classList.remove('open');
+      });
 
       const img = document.createElement('img');
       if (r.posterUrl) img.src = r.posterUrl;
