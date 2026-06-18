@@ -93,9 +93,21 @@
         if (og && !/seo\.png(\?|$)/i.test(og)) return og;
         return null;
       },
-      // Best-effort episode name for TV. cineby renders it client-side; selector is
-      // TODO-verified against a live episode page (see console snippet in chat).
+      // Episode name for TV. cineby lists episodes as "<n>. <name>" headings and marks
+      // the active one with a "Watching" prefix. We match the episode number from the
+      // URL, e.g. "Watching9. Undefeated" / "9. Undefeated" -> "Undefeated".
       extractEpisodeTitle() {
+        const p = parseTmdbPath(prefix);
+        if (!p || p.type !== 'tv') return null;
+        const ep = p.id.split(':')[4];
+        if (!ep) return null;
+        const re = new RegExp('^(?:watching)?\\s*' + ep + '\\.\\s*(.+)$', 'i');
+        for (const el of document.querySelectorAll('h1,h2,h3,h4')) {
+          const t = (el.textContent || '').trim();
+          if (t.length > 80) continue;
+          const m = t.match(re);
+          if (m) return m[1].trim();
+        }
         return null;
       },
       getVideo() {
