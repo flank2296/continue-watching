@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Continue Watching (cineby + rivestream)
 // @namespace    video-ext.continue-watching
-// @version      0.2.5
+// @version      0.2.7
 // @description  Adds a "Continue Watching" list and resume-from-last-position to cineby & rivestream, with optional end-to-end-encrypted cross-device sync.
 // @author       you
 // @match        *://*.cineby.at/*
@@ -480,11 +480,19 @@
     };
     log('tracking', contentId);
 
-    // Resume toast if we have a saved mid-progress position.
+    // Resume if we have a saved mid-progress position.
     const saved = Store.get(contentId);
     if (saved && saved.currentTime > MIN_PROGRESS_S) {
       const pct = saved.duration ? (saved.currentTime / saved.duration) * 100 : 0;
-      if (pct < FINISHED_PCT) UI.showResume(saved.currentTime, () => seekTo(video, saved.currentTime));
+      if (pct < FINISHED_PCT) {
+        // Auto-resume: when the episode opens at/near the start, jump to the saved spot.
+        const autoResume = () => {
+          if (!signal.aborted && (video.currentTime || 0) < 60) seekTo(video, saved.currentTime);
+        };
+        if (video.readyState >= 1) autoResume();
+        else video.addEventListener('loadedmetadata', autoResume, { once: true, signal });
+        UI.showResume(saved.currentTime, () => seekTo(video, saved.currentTime));
+      }
     }
 
     let lastSave = 0;
@@ -817,11 +825,12 @@
       row.addEventListener('click', () => {
         const here = activeAdapter();
         const sameContent = here && here.matches() && here.extractContentId() === r.contentId;
-        const v = document.querySelector('video');
+        const vids = [...document.querySelectorAll('video')];
+        const v = vids.slice().sort((a, b) => (b.duration || 0) - (a.duration || 0))[0];
         if (sameContent && v) {
           seekTo(v, r.currentTime); // already on this page — just jump, don't reload
         } else {
-          location.assign(r.url); // different page — navigate; the resume toast seeks there
+          location.assign(r.url); // different page — navigate; auto-resume seeks there
         }
         panelEl.classList.remove('open');
       });

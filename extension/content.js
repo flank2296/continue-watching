@@ -193,11 +193,19 @@
     };
     log('tracking', contentId);
 
-    // Resume prompt if we have a saved mid-progress position.
+    // Resume if we have a saved mid-progress position.
     CWStore.get(contentId).then((saved) => {
       if (signal.aborted || !saved || saved.currentTime <= MIN_PROGRESS_S) return;
       const pct = saved.duration ? (saved.currentTime / saved.duration) * 100 : 0;
-      if (pct < FINISHED_PCT) UI.showResume(saved.currentTime, () => seekTo(video, saved.currentTime));
+      if (pct >= FINISHED_PCT) return;
+      // Auto-resume: when the episode opens at/near the start, jump to the saved spot.
+      const autoResume = () => {
+        if (!signal.aborted && (video.currentTime || 0) < 60) seekTo(video, saved.currentTime);
+      };
+      if (video.readyState >= 1) autoResume();
+      else video.addEventListener('loadedmetadata', autoResume, { once: true, signal });
+      // Manual button too, in case auto-resume is unwanted or didn't take.
+      UI.showResume(saved.currentTime, () => seekTo(video, saved.currentTime));
     });
 
     let lastSave = 0;
@@ -442,11 +450,12 @@
       row.addEventListener('click', () => {
         const here = activeAdapter();
         const sameContent = here && here.matches() && here.extractContentId() === r.contentId;
-        const v = document.querySelector('video');
+        const vids = [...document.querySelectorAll('video')];
+        const v = vids.slice().sort((a, b) => (b.duration || 0) - (a.duration || 0))[0];
         if (sameContent && v) {
           seekTo(v, r.currentTime); // already on this page — just jump, don't reload
         } else {
-          location.assign(r.url); // different page — navigate; the resume toast seeks there
+          location.assign(r.url); // different page — navigate; auto-resume seeks there
         }
         panelEl.classList.remove('open');
       });
@@ -507,6 +516,7 @@
       if (resumeEl) resumeEl.classList.remove('open');
       clearTimeout(resumeTimer);
     }
+
 
     return { build, openPanel, showResume, hideResume };
   })();
